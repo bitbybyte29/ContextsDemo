@@ -1,0 +1,34 @@
+.App {
+  font-family: sans-serif;
+  text-align: center;
+}
+
+.colorFillingList {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.colorPalleteList {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}
+
+.colorFillingItem {
+  background: transparent;
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 10px;
+  border: 1px solid black;
+}
+
+.colorPalleteItem {
+  opacity: 0.9;
+  width: 50px;
+  height: 50px;
+  margin-right: 10px;
+  border-radius: 50%;
+  border: 1px solid black;
+}
