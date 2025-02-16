@@ -1,186 +1,202 @@
 import { useState, useMemo, useEffect } from "react";
 import "./styles.css";
 
-function ColorFillingItem(props: {
-  index: number;
-  color: string;
-  handleDrop: any;
-}) {
-  const { index, color, handleDrop } = props;
+// Color constants for easy management
+const COLORS = {
+  palette: ["#2ecc71", "#e74c3c", "#f1c40f", "#9b59b6", "#e67e22", "#3498db"],
+  background: "#2c3e50",
+  text: "#ecf0f1",
+  success: "#2ecc71",
+  error: "#e74c3c",
+};
 
-  const handleDragOver = (event: any) => {
-    event.preventDefault();
-  };
-
-  return (
-    <div
-      className="colorFillingItem"
-      style={{ background: color }}
-      onDrop={(e) => handleDrop(e, index)}
-      onDragOver={handleDragOver}
+// Timer component
+const Timer = ({ timeLeft, totalTime }: { timeLeft: number; totalTime: number }) => (
+  <div className="timer-container">
+    <div 
+      className="timer-progress" 
+      style={{ width: `${(timeLeft / totalTime) * 100}%` }}
     />
-  );
-}
+  </div>
+);
 
-const colorList = ["green", "red", "yellow", "purple", "orange", "blue"];
-
-function ColorPalleteItem(props: {
-  color: string;
-  handleDragStart?: Function;
-}) {
-  const { color, handleDragStart } = props;
-  return (
-    <div
-      className="colorPalleteItem"
-      style={{ background: color }}
-      draggable
-      onDragStart={(event) => handleDragStart?.(event, color)}
-    />
-  );
-}
-
-function ColorSequence(props: { randomColorArr: string[]; hide: boolean }) {
-  const { randomColorArr, hide } = props;
-
-  return (
-    <div style={{ marginBottom: "10px", height: "100px" }}>
-      <h3>Memorize this color sequence and try repeat it!</h3>
-
-      <div className="colorPalleteList" style={{ height: "100px" }}>
-        {!hide
-          ? randomColorArr.map((color, index) => (
-              <ColorPalleteItem key={index} color={color} />
-            ))
-          : null}
-      </div>
+// Level progress component
+const LevelProgress = ({ currentLevel }: { currentLevel: number }) => (
+  <div className="level-container">
+    <h2>Level: {currentLevel}</h2>
+    <div className="progress-bar">
+      {Array(currentLevel).fill(null).map((_, i) => (
+        <div key={i} className="progress-dot" />
+      ))}
     </div>
-  );
-}
+  </div>
+);
 
-function ColorFilling(props: {
-  colorFillList: string[];
-  handleDrop: any;
-  show: boolean;
-}) {
-  const { colorFillList, handleDrop, show } = props;
-
-  if (!show) return null;
-
-  return (
-    <div>
-      <div className="colorFillingList">
-        {colorFillList.map((color, index) => (
-          <ColorFillingItem
-            index={index}
-            color={color}
-            handleDrop={handleDrop}
-          />
-        ))}
-      </div>
+// Game controls component
+const GameControls = ({ onCheck, colors, onDragStart }: { 
+  onCheck: () => void;
+  colors: string[];
+  onDragStart: (e: React.DragEvent, color: string) => void;
+}) => (
+  <div className="game-controls">
+    <h3>Drag colors to the slots below</h3>
+    <div className="color-palette">
+      {colors.map((color, index) => (
+        <div
+          key={index}
+          className="color-chip"
+          style={{ backgroundColor: color }}
+          draggable
+          onDragStart={(e) => onDragStart(e, color)}
+        />
+      ))}
     </div>
-  );
-}
+    <button className="check-button" onClick={onCheck}>
+      CHECK ANSWER
+    </button>
+  </div>
+);
 
-function ColorPallete(props: {
-  onClickCheck: VoidFunction;
-  handleDragStart: Function;
-  show: boolean;
-}) {
-  const { onClickCheck, handleDragStart, show } = props;
-  if (!show) return null;
-  return (
-    <div>
-      <h5>Drag the colors to the slots. Then, click CHECK</h5>
-      <div className="colorPalleteList">
-        {colorList.map((color, index) => (
-          <ColorPalleteItem
-            key={index}
-            color={color}
-            handleDragStart={handleDragStart}
-          />
-        ))}
-        <button onClick={onClickCheck}>Check</button>
-      </div>
-    </div>
-  );
-}
-
-export default function App() {
-  const [currentLevel, setCurrentLevel] = useState(2);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
-  const [hide, setHide] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(5000);
-  const randomColorArr = useMemo(
-    () =>
-      Array.from(
-        { length: currentLevel },
-        () => colorList[Math.floor(Math.random() * colorList.length)]
-      ),
+// Main game component
+export default function MemoryGame() {
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [gameState, setGameState] = useState({
+    isPlaying: false,
+    showSequence: true,
+    timeLeft: 5000,
+    result: null as null | "success" | "error",
+  });
+  
+  const [userSequence, setUserSequence] = useState<string[]>([]);
+  
+  const targetSequence = useMemo(
+    () => Array.from({ length: currentLevel }, () => 
+      COLORS.palette[Math.floor(Math.random() * COLORS.palette.length)]
+    ),
     [currentLevel]
   );
 
-  const [colorFillArr, setColorFillArr] = useState(
-    Array.from({ length: currentLevel }, () => "")
-  );
-
-  const onClickCheck = () => {
-    const isCorrect = randomColorArr.toString() === colorFillArr.toString();
-    setIsCorrect(isCorrect);
-    if (isCorrect) {
-      setCurrentLevel(currentLevel + 1);
-      setColorFillArr(Array.from({ length: currentLevel + 1 }, () => ""));
-    }
+  const handleDragStart = (e: React.DragEvent, color: string) => {
+    e.dataTransfer.setData("color", color);
   };
 
-  const handleDragStart = (event: any, color: string) => {
-    event.dataTransfer.setData("color", color);
-  };
-
-  const handleDrop = (event: any, index: number) => {
-    event.preventDefault();
-    const droppedColor = event.dataTransfer.getData("color");
-
-    setColorFillArr((prevState) => {
-      const newState = Object.assign([], prevState) as string[];
-      newState[index] = droppedColor;
-      return newState;
+  const handleDrop = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    const color = e.dataTransfer.getData("color");
+    setUserSequence(prev => {
+      const newSeq = [...prev];
+      newSeq[index] = color;
+      return newSeq;
     });
   };
 
-  useEffect(() => {
-    setInterval(() => !hide && setTimeLeft(timeLeft - 1000), 1000);
-  }, [hide, timeLeft]);
+  const checkAnswer = () => {
+    const isCorrect = targetSequence.every((color, i) => color === userSequence[i]);
+    setGameState(prev => ({ ...prev, result: isCorrect ? "success" : "error" }));
+    
+    if (isCorrect) {
+      setTimeout(() => {
+        setCurrentLevel(prev => prev + 1);
+        setGameState({ isPlaying: true, showSequence: true, timeLeft: 5000, result: null });
+        setUserSequence([]);
+      }, 1500);
+    } else {
+      setTimeout(() => {
+        setGameState({ isPlaying: false, showSequence: false, timeLeft: 0, result: null });
+      }, 1500);
+    }
+  };
 
   useEffect(() => {
-    setHide(false);
-    setTimeLeft(5000);
-    setTimeout(() => {
-      setHide(true);
-    }, 5000);
-  }, [currentLevel]);
+    if (!gameState.isPlaying) return;
+
+    const timer = setInterval(() => {
+      setGameState(prev => ({
+        ...prev,
+        timeLeft: Math.max(0, prev.timeLeft - 100)
+      }));
+    }, 100);
+
+    return () => clearInterval(timer);
+  }, [gameState.isPlaying]);
+
+  useEffect(() => {
+    if (gameState.timeLeft > 0 || !gameState.showSequence) return;
+
+    const timeout = setTimeout(() => {
+      setGameState(prev => ({ ...prev, showSequence: false }));
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, [gameState.showSequence, gameState.timeLeft]);
 
   return (
-    <div className="App">
-      <ColorSequence randomColorArr={randomColorArr} hide={hide} />
-      {/* {!hide && <div>{timeLeft / 1000} seconds left</div>} */}
-      <ColorFilling
-        colorFillList={colorFillArr}
-        handleDrop={handleDrop}
-        show={hide}
-      />
-      <ColorPallete
-        onClickCheck={onClickCheck}
-        handleDragStart={handleDragStart}
-        show={hide}
-      />
-      {isCorrect === false ? (
-        <div style={{ color: "red" }}>Oops! Try again later</div>
-      ) : isCorrect === true ? (
-        <div style={{ color: "green" }}>
-          That's correct, head on to the next level
-        </div>
+    <div className="game-container">
+      {!gameState.isPlaying ? (
+        <button 
+          className="start-button"
+          onClick={() => setGameState({ 
+            isPlaying: true, 
+            showSequence: true, 
+            timeLeft: 5000, 
+            result: null 
+          })}
+        >
+          START GAME
+        </button>
       ) : (
-        <div></div>
+        <>
+          <LevelProgress currentLevel={currentLevel} />
+          <Timer timeLeft={gameState.timeLeft} totalTime={5000} />
+
+          {gameState.showSequence && (
+            <div className="sequence-display">
+              {targetSequence.map((color, i) => (
+                <div
+                  key={i}
+                  className="sequence-color"
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          )}
+
+          {!gameState.showSequence && (
+            <div className="answer-slots">
+              {targetSequence.map((_, index) => (
+                <div
+                  key={index}
+                  className="slot"
+                  onDrop={(e) => handleDrop(e, index)}
+                  onDragOver={(e) => e.preventDefault()}
+                >
+                  {userSequence[index] && (
+                    <div 
+                      className="filled-slot"
+                      style={{ backgroundColor: userSequence[index] }}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {gameState.result && (
+            <div className={`result-message ${gameState.result}`}>
+              {gameState.result === "success" 
+                ? "🎉 Correct! Next level..." 
+                : "❌ Try again!"}
+            </div>
+          )}
+
+          {!gameState.showSequence && !gameState.result && (
+            <GameControls
+              onCheck={checkAnswer}
+              colors={COLORS.palette}
+              onDragStart={handleDragStart}
+            />
+          )}
+        </>
       )}
     </div>
   );
