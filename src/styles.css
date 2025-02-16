@@ -157,3 +157,39 @@ body {
   background: rgba(231, 76, 60, 0.2);
   color: #e74c3c;
 }
+
+.game-header {
+  padding: 1rem;
+  margin-bottom: 2rem;
+  background: linear-gradient(45deg, #3498db, #9b59b6);
+  border-radius: 15px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.logo {
+  font-size: 2.5rem;
+  animation: bounce 2s infinite;
+}
+
+.subtitle {
+  color: #f1c40f;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}

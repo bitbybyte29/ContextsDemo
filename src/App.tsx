@@ -10,6 +10,16 @@ const COLORS = {
   error: "#e74c3c",
 };
 
+const GameHeader = () => (
+  <header className="game-header">
+    <div className="logo-container">
+      <span className="logo">🧠🎨</span>
+      <h1>Brain Paint</h1>
+    </div>
+    <p className="subtitle">Where Colors Meet Memory!</p>
+  </header>
+);
+
 // Timer component
 const Timer = ({
   timeLeft,
@@ -29,7 +39,7 @@ const Timer = ({
 // Level progress component
 const LevelProgress = ({ currentLevel }: { currentLevel: number }) => (
   <div className="level-container">
-    <h2>Level: {currentLevel}</h2>
+    <h2>Level: {currentLevel - 1}</h2>
     <div className="progress-bar">
       {Array(currentLevel)
         .fill(null)
