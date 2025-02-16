@@ -11,10 +11,16 @@ const COLORS = {
 };
 
 // Timer component
-const Timer = ({ timeLeft, totalTime }: { timeLeft: number; totalTime: number }) => (
+const Timer = ({
+  timeLeft,
+  totalTime,
+}: {
+  timeLeft: number;
+  totalTime: number;
+}) => (
   <div className="timer-container">
-    <div 
-      className="timer-progress" 
+    <div
+      className="timer-progress"
       style={{ width: `${(timeLeft / totalTime) * 100}%` }}
     />
   </div>
@@ -25,15 +31,21 @@ const LevelProgress = ({ currentLevel }: { currentLevel: number }) => (
   <div className="level-container">
     <h2>Level: {currentLevel}</h2>
     <div className="progress-bar">
-      {Array(currentLevel).fill(null).map((_, i) => (
-        <div key={i} className="progress-dot" />
-      ))}
+      {Array(currentLevel)
+        .fill(null)
+        .map((_, i) => (
+          <div key={i} className="progress-dot" />
+        ))}
     </div>
   </div>
 );
 
 // Game controls component
-const GameControls = ({ onCheck, colors, onDragStart }: { 
+const GameControls = ({
+  onCheck,
+  colors,
+  onDragStart,
+}: {
   onCheck: () => void;
   colors: string[];
   onDragStart: (e: React.DragEvent, color: string) => void;
@@ -59,20 +71,22 @@ const GameControls = ({ onCheck, colors, onDragStart }: {
 
 // Main game component
 export default function MemoryGame() {
-  const [currentLevel, setCurrentLevel] = useState(1);
+  const [currentLevel, setCurrentLevel] = useState(2);
   const [gameState, setGameState] = useState({
     isPlaying: false,
     showSequence: true,
     timeLeft: 5000,
     result: null as null | "success" | "error",
   });
-  
+
   const [userSequence, setUserSequence] = useState<string[]>([]);
-  
+
   const targetSequence = useMemo(
-    () => Array.from({ length: currentLevel }, () => 
-      COLORS.palette[Math.floor(Math.random() * COLORS.palette.length)]
-    ),
+    () =>
+      Array.from(
+        { length: currentLevel },
+        () => COLORS.palette[Math.floor(Math.random() * COLORS.palette.length)]
+      ),
     [currentLevel]
   );
 
@@ -83,7 +97,7 @@ export default function MemoryGame() {
   const handleDrop = (e: React.DragEvent, index: number) => {
     e.preventDefault();
     const color = e.dataTransfer.getData("color");
-    setUserSequence(prev => {
+    setUserSequence((prev) => {
       const newSeq = [...prev];
       newSeq[index] = color;
       return newSeq;
@@ -91,18 +105,33 @@ export default function MemoryGame() {
   };
 
   const checkAnswer = () => {
-    const isCorrect = targetSequence.every((color, i) => color === userSequence[i]);
-    setGameState(prev => ({ ...prev, result: isCorrect ? "success" : "error" }));
-    
+    const isCorrect = targetSequence.every(
+      (color, i) => color === userSequence[i]
+    );
+    setGameState((prev) => ({
+      ...prev,
+      result: isCorrect ? "success" : "error",
+    }));
+
     if (isCorrect) {
       setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setGameState({ isPlaying: true, showSequence: true, timeLeft: 5000, result: null });
+        setCurrentLevel((prev) => prev + 1);
+        setGameState({
+          isPlaying: true,
+          showSequence: true,
+          timeLeft: 5000,
+          result: null,
+        });
         setUserSequence([]);
       }, 1500);
     } else {
       setTimeout(() => {
-        setGameState({ isPlaying: false, showSequence: false, timeLeft: 0, result: null });
+        setGameState({
+          isPlaying: false,
+          showSequence: false,
+          timeLeft: 0,
+          result: null,
+        });
       }, 1500);
     }
   };
@@ -111,9 +140,9 @@ export default function MemoryGame() {
     if (!gameState.isPlaying) return;
 
     const timer = setInterval(() => {
-      setGameState(prev => ({
+      setGameState((prev) => ({
         ...prev,
-        timeLeft: Math.max(0, prev.timeLeft - 100)
+        timeLeft: Math.max(0, prev.timeLeft - 100),
       }));
     }, 100);
 
@@ -124,7 +153,7 @@ export default function MemoryGame() {
     if (gameState.timeLeft > 0 || !gameState.showSequence) return;
 
     const timeout = setTimeout(() => {
-      setGameState(prev => ({ ...prev, showSequence: false }));
+      setGameState((prev) => ({ ...prev, showSequence: false }));
     }, 500);
 
     return () => clearTimeout(timeout);
@@ -133,14 +162,16 @@ export default function MemoryGame() {
   return (
     <div className="game-container">
       {!gameState.isPlaying ? (
-        <button 
+        <button
           className="start-button"
-          onClick={() => setGameState({ 
-            isPlaying: true, 
-            showSequence: true, 
-            timeLeft: 5000, 
-            result: null 
-          })}
+          onClick={() =>
+            setGameState({
+              isPlaying: true,
+              showSequence: true,
+              timeLeft: 5000,
+              result: null,
+            })
+          }
         >
           START GAME
         </button>
@@ -171,7 +202,7 @@ export default function MemoryGame() {
                   onDragOver={(e) => e.preventDefault()}
                 >
                   {userSequence[index] && (
-                    <div 
+                    <div
                       className="filled-slot"
                       style={{ backgroundColor: userSequence[index] }}
                     />
@@ -183,8 +214,8 @@ export default function MemoryGame() {
 
           {gameState.result && (
             <div className={`result-message ${gameState.result}`}>
-              {gameState.result === "success" 
-                ? "🎉 Correct! Next level..." 
+              {gameState.result === "success"
+                ? "🎉 Correct! Next level..."
                 : "❌ Try again!"}
             </div>
           )}
