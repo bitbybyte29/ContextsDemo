@@ -170,75 +170,78 @@ export default function MemoryGame() {
   }, [gameState.showSequence, gameState.timeLeft]);
 
   return (
-    <div className="game-container">
-      {!gameState.isPlaying ? (
-        <button
-          className="start-button"
-          onClick={() =>
-            setGameState({
-              isPlaying: true,
-              showSequence: true,
-              timeLeft: 5000,
-              result: null,
-            })
-          }
-        >
-          START GAME
-        </button>
-      ) : (
-        <>
-          <LevelProgress currentLevel={currentLevel} />
-          <Timer timeLeft={gameState.timeLeft} totalTime={5000} />
+    <div>
+      <GameHeader />
+      <div className="game-container">
+        {!gameState.isPlaying ? (
+          <button
+            className="start-button"
+            onClick={() =>
+              setGameState({
+                isPlaying: true,
+                showSequence: true,
+                timeLeft: 5000,
+                result: null,
+              })
+            }
+          >
+            START GAME
+          </button>
+        ) : (
+          <>
+            <LevelProgress currentLevel={currentLevel} />
+            <Timer timeLeft={gameState.timeLeft} totalTime={5000} />
 
-          {gameState.showSequence && (
-            <div className="sequence-display">
-              {targetSequence.map((color, i) => (
-                <div
-                  key={i}
-                  className="sequence-color"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
-          )}
+            {gameState.showSequence && (
+              <div className="sequence-display">
+                {targetSequence.map((color, i) => (
+                  <div
+                    key={i}
+                    className="sequence-color"
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+            )}
 
-          {!gameState.showSequence && (
-            <div className="answer-slots">
-              {targetSequence.map((_, index) => (
-                <div
-                  key={index}
-                  className="slot"
-                  onDrop={(e) => handleDrop(e, index)}
-                  onDragOver={(e) => e.preventDefault()}
-                >
-                  {userSequence[index] && (
-                    <div
-                      className="filled-slot"
-                      style={{ backgroundColor: userSequence[index] }}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+            {!gameState.showSequence && (
+              <div className="answer-slots">
+                {targetSequence.map((_, index) => (
+                  <div
+                    key={index}
+                    className="slot"
+                    onDrop={(e) => handleDrop(e, index)}
+                    onDragOver={(e) => e.preventDefault()}
+                  >
+                    {userSequence[index] && (
+                      <div
+                        className="filled-slot"
+                        style={{ backgroundColor: userSequence[index] }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
-          {gameState.result && (
-            <div className={`result-message ${gameState.result}`}>
-              {gameState.result === "success"
-                ? "🎉 Correct! Next level..."
-                : "❌ Try again!"}
-            </div>
-          )}
+            {gameState.result && (
+              <div className={`result-message ${gameState.result}`}>
+                {gameState.result === "success"
+                  ? "🎉 Correct! Next level..."
+                  : "❌ Try again!"}
+              </div>
+            )}
 
-          {!gameState.showSequence && !gameState.result && (
-            <GameControls
-              onCheck={checkAnswer}
-              colors={COLORS.palette}
-              onDragStart={handleDragStart}
-            />
-          )}
-        </>
-      )}
+            {!gameState.showSequence && !gameState.result && (
+              <GameControls
+                onCheck={checkAnswer}
+                colors={COLORS.palette}
+                onDragStart={handleDragStart}
+              />
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
